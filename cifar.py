@@ -40,8 +40,10 @@ parser.add_argument('--nce-m', default=0.5, type=float,
                     metavar='M', help='momentum for non-parametric updates')
 parser.add_argument('--cifar100', action='store_true',
                     help='train on cifar100')
-
+parser.add_argument('--gpu', default='0', type=str,
+                    help='id(s) for CUDA_VISIBLE_DEVICES')
 args = parser.parse_args()
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
