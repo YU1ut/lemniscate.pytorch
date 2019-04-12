@@ -45,7 +45,7 @@ parser.add_argument('--gpu', default='0', type=str,
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
@@ -89,9 +89,9 @@ if args.nce_k > 0:
 else:
     lemniscate = LinearAverage(args.low_dim, ndata, args.nce_t, args.nce_m)
 
-if device == 'cuda':
-    net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
-    cudnn.benchmark = True
+
+net = torch.nn.DataParallel(net)
+cudnn.benchmark = True
 
 # Model
 if args.test_only or len(args.resume)>0:
@@ -110,9 +110,9 @@ if hasattr(lemniscate, 'K'):
 else:
     criterion = nn.CrossEntropyLoss()
 
-net.to(device)
-lemniscate.to(device)
-criterion.to(device)
+net.cuda()
+lemniscate.cuda()
+criterion.cuda()
 
 if args.test_only:
     acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
@@ -145,7 +145,7 @@ def train(epoch):
     end = time.time()
     for batch_idx, (inputs, targets, indexes) in enumerate(trainloader):
         data_time.update(time.time() - end)
-        inputs, targets, indexes = inputs.to(device), targets.to(device), indexes.to(device)
+        inputs, targets, indexes = inputs.cuda(), targets.cuda(), indexes.cuda()
         optimizer.zero_grad()
 
         features = net(inputs)
